@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Cobra Team | Gestión de Torneos Jiu-Jitsu</title>
+    <link rel="stylesheet" href="index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Splash Screen -->
+<div id="splash" class="splash">
+    <div class="splash-content">
+        <div class="splash-logo">
+            <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 10L61.8 35.4L90 38.2L70 56.6L76.4 84L50 70L23.6 84L30 56.6L10 38.2L38.2 35.4L50 10Z" fill="#D4AF37" stroke="#D4AF37" stroke-width="2"/>
+                <circle cx="50" cy="50" r="8" fill="#0A0A0A"/>
+            </svg>
+        </div>
+        <h1>COBRA TEAM</h1>
+        <p>Plataforma de Gestión de Torneos</p>
+        <div class="loader"></div>
+    </div>
+</div>
+
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-logo">COBRA TEAM</div>
+        <div class="nav-links">
+            <a href="#home" class="nav-link">Inicio</a>
+            <a href="#countdown" class="nav-link">Torneo</a>
+            <a href="#inscripcion" class="nav-link">Inscripción</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section id="home" class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <div class="hero-badge">CAMPEONATO OFICIAL 2026</div>
+        <h1>DOMINA EL ARTE SUAVE</h1>
+        <p>Competencia, disciplina y excelencia en Jiu-Jitsu Brasileño</p>
+    </div>
+    <div class="hero-scroll">
+        <span>Scroll</span>
+        <div class="scroll-line"></div>
+    </div>
+</section>
+
+<!-- Countdown Section -->
+<section id="countdown" class="countdown-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag">PRÓXIMO EVENTO</span>
+            <h2>COBRA TEAM CHAMPIONSHIP</h2>
+            <p>15 de Mayo, 2026 - Arena Cobra Team</p>
+        </div>
+        
+        <div class="countdown-timer">
+            <div class="countdown-item">
+                <div class="countdown-number" id="days">00</div>
+                <div class="countdown-label">Días</div>
+            </div>
+            <div class="countdown-separator">:</div>
+            <div class="countdown-item">
+                <div class="countdown-number" id="hours">00</div>
+                <div class="countdown-label">Horas</div>
+            </div>
+            <div class="countdown-separator">:</div>
+            <div class="countdown-item">
+                <div class="countdown-number" id="minutes">00</div>
+                <div class="countdown-label">Minutos</div>
+            </div>
+            <div class="countdown-separator">:</div>
+            <div class="countdown-item">
+                <div class="countdown-number" id="seconds">00</div>
+                <div class="countdown-label">Segundos</div>
+            </div>
+        </div>
+        
+        <button id="openRegisterBtn" class="btn-register-main">INSCRIBIRSE AL TORNEO</button>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features">
+    <div class="container">
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="1.5">
+                        <path d="M12 2L15 8.5L22 9.5L17 14L18.5 21L12 17.5L5.5 21L7 14L2 9.5L9 8.5L12 2Z"/>
+                    </svg>
+                </div>
+                <h3>Alta Competencia</h3>
+                <p>Participa en el torneo más prestigioso del año</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 6v6l4 2"/>
+                    </svg>
+                </div>
+                <h3>Categorías por Peso</h3>
+                <p>Competencia justa con divisiones especializadas</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="1.5">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                </div>
+                <h3>Certificación Oficial</h3>
+                <p>Medallas y reconocimiento oficial</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal de Inscripción -->
+<div id="registerModal" class="modal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h2>Formulario de Inscripción</h2>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="inscriptionStatus" class="alert alert-info">Inscripciones abiertas</div>
+            <form id="registerForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input type="text" id="nombre" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Apellido</label>
+                        <input type="text" id="apellido" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>DNI</label>
+                        <input type="text" id="dni" class="form-control" pattern="[0-9]+" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Peso (kg)</label>
+                        <input type="number" id="peso" class="form-control" step="0.1" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Grado / Cinturón</label>
+                    <select id="cinturon" class="form-control" required>
+                        <option value="">Seleccione su grado</option>
+                        <option value="Blanco">Blanco</option>
+                        <option value="Azul">Azul</option>
+                        <option value="Morado">Morado</option>
+                        <option value="Marrón">Marrón</option>
+                        <option value="Negro">Negro</option>
+                    </select>
+                </div>
+                <div id="formError" class="alert alert-error" style="display:none;"></div>
+                <button type="submit" id="submitBtn" class="btn-submit">Confirmar Inscripción</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
+</body>
+</html>

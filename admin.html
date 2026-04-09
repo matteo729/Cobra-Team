@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cobra Team Admin | Panel de Control</title>
+    <link rel="stylesheet" href="admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="admin-wrapper">
+    <!-- Login Panel -->
+    <div id="loginPanel" class="login-panel">
+        <div class="login-box">
+            <div class="login-header">
+                <h1>COBRA TEAM</h1>
+                <p>Panel de Administración</p>
+            </div>
+            <div class="login-form">
+                <input type="password" id="adminPassword" placeholder="Contraseña de acceso" class="login-input">
+                <button id="loginBtn" class="login-btn">Acceder al sistema</button>
+                <div id="loginError" class="error-msg">Acceso denegado</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminPanel" class="admin-dashboard" style="display:none;">
+        <div class="admin-sidebar">
+            <div class="sidebar-header">
+                <h2>COBRA TEAM</h2>
+                <p>Administración</p>
+            </div>
+            <div class="sidebar-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Total inscritos</span>
+                    <span class="stat-value" id="totalCount">0</span>
+                </div>
+            </div>
+            <button id="logoutBtn" class="sidebar-logout">Cerrar sesión</button>
+        </div>
+        
+        <div class="admin-main">
+            <div class="admin-toolbar">
+                <div class="toggle-control">
+                    <span class="toggle-label">Estado inscripciones</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="inscriptionToggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span id="toggleStatusText" class="toggle-status">Cerradas</span>
+                </div>
+                <button id="refreshTableBtn" class="btn-refresh">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                    </svg>
+                    Actualizar
+                </button>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>DNI</th>
+                            <th>Peso</th>
+                            <th>Cinturón</th>
+                            <th>Fecha</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr>
+                            <td colspan="8" class="loading-state">Cargando competidores...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar -->
+<div id="editModal" class="modal-custom">
+    <div class="modal-custom-content">
+        <div class="modal-custom-header">
+            <h3>Editar Competidor</h3>
+            <button class="modal-custom-close">&times;</button>
+        </div>
+        <div class="modal-custom-body">
+            <form id="editForm">
+                <input type="hidden" id="editId">
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" id="editNombre" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Apellido</label>
+                    <input type="text" id="editApellido" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>DNI</label>
+                    <input type="text" id="editDni" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Peso (kg)</label>
+                    <input type="number" id="editPeso" class="form-control" step="0.1" required>
+                </div>
+                <div class="form-group">
+                    <label>Cinturón</label>
+                    <select id="editCinturon" class="form-control">
+                        <option>Blanco</option>
+                        <option>Azul</option>
+                        <option>Morado</option>
+                        <option>Marrón</option>
+                        <option>Negro</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-save">Guardar cambios</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
+</body>
+</html>
