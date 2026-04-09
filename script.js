@@ -3,10 +3,12 @@
 const SUPABASE_URL = 'https://hflaucrflhnaefzzqqpn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmbGF1Y3JmbGhuYWVmenpxcXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MzQzOTYsImV4cCI6MjA5MTMxMDM5Nn0.V8DRzyiSbElDxC89gFKLMfhu28evKTYEKwkXlPm22KQ';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Inicializar Supabase - Cambiado a variable diferente para evitar conflictos
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ==================== GLOBAL STATE ====================
 let inscriptionsOpen = true;
+let countdownInterval = null;
 
 // ==================== COUNTDOWN FUNCTION ====================
 function updateCountdown() {
@@ -17,11 +19,23 @@ function updateCountdown() {
     const now = new Date();
     const difference = targetDate - now;
     
+    const daysElement = document.getElementById('days');
+    const hoursElement = document.getElementById('hours');
+    const minutesElement = document.getElementById('minutes');
+    const secondsElement = document.getElementById('seconds');
+    
+    if (!daysElement || !hoursElement || !minutesElement || !secondsElement) {
+        return;
+    }
+    
     if (difference <= 0) {
-        document.getElementById('days').textContent = '00';
-        document.getElementById('hours').textContent = '00';
-        document.getElementById('minutes').textContent = '00';
-        document.getElementById('seconds').textContent = '00';
+        daysElement.textContent = '00';
+        hoursElement.textContent = '00';
+        minutesElement.textContent = '00';
+        secondsElement.textContent = '00';
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+        }
         return;
     }
     
@@ -30,44 +44,62 @@ function updateCountdown() {
     const minutes = Math.floor((difference % 3600000) / 60000);
     const seconds = Math.floor((difference % 60000) / 1000);
     
-    document.getElementById('days').textContent = String(days).padStart(2, '0');
-    document.getElementById('hours').textContent = String(hours).padStart(2, '0');
-    document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
-    document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+    daysElement.textContent = String(days).padStart(2, '0');
+    hoursElement.textContent = String(hours).padStart(2, '0');
+    minutesElement.textContent = String(minutes).padStart(2, '0');
+    secondsElement.textContent = String(seconds).padStart(2, '0');
 }
 
-setInterval(updateCountdown, 1000);
-updateCountdown();
+// Iniciar countdown solo después de que el DOM esté listo
+function startCountdown() {
+    updateCountdown();
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+    }
+    countdownInterval = setInterval(updateCountdown, 1000);
+}
 
 // ==================== INSCRIPTION FUNCTIONS ====================
 async function checkDNIExists(dni) {
-    const { data, error } = await supabase
-        .from('competitors')
-        .select('dni')
-        .eq('dni', dni)
-        .maybeSingle();
-    
-    if (error && error.code !== 'PGRST116') {
-        console.error('Error checking DNI:', error);
+    try {
+        const { data, error } = await supabaseClient
+            .from('competitors')
+            .select('dni')
+            .eq('dni', dni)
+            .maybeSingle();
+        
+        if (error && error.code !== 'PGRST116') {
+            console.error('Error checking DNI:', error);
+            return false;
+        }
+        return !!data;
+    } catch (error) {
+        console.error('Error in checkDNIExists:', error);
         return false;
     }
-    return !!data;
 }
 
 async function loadInscriptionStatus() {
-    const { data, error } = await supabase
-        .from('settings')
-        .select('value')
-        .eq('key', 'inscriptions_open')
-        .single();
-    
-    if (!error && data) {
-        inscriptionsOpen = data.value === 'true';
-    } else {
+    try {
+        const { data, error } = await supabaseClient
+            .from('settings')
+            .select('value')
+            .eq('key', 'inscriptions_open')
+            .single();
+        
+        if (!error && data) {
+            inscriptionsOpen = data.value === 'true';
+        } else {
+            inscriptionsOpen = true;
+        }
+        updateInscriptionUI();
+        return inscriptionsOpen;
+    } catch (error) {
+        console.error('Error loading inscription status:', error);
         inscriptionsOpen = true;
+        updateInscriptionUI();
+        return true;
     }
-    updateInscriptionUI();
-    return inscriptionsOpen;
 }
 
 function updateInscriptionUI() {
@@ -117,13 +149,19 @@ async function submitRegistration(event) {
         return;
     }
     
+    // Validar DNI solo números
+    if (!/^\d+$/.test(dni)) {
+        showFormError('El DNI debe contener solo números');
+        return;
+    }
+    
     const exists = await checkDNIExists(dni);
     if (exists) {
         showFormError('Este DNI ya se encuentra registrado en el torneo');
         return;
     }
     
-    const { error } = await supabase
+    const { error } = await supabaseClient
         .from('competitors')
         .insert([{ 
             nombre, 
@@ -135,7 +173,7 @@ async function submitRegistration(event) {
         }]);
     
     if (error) {
-        console.error(error);
+        console.error('Insert error:', error);
         showFormError('Error al procesar la inscripcion. Intente nuevamente');
     } else {
         alert('Inscripcion completada exitosamente');
@@ -147,54 +185,71 @@ async function submitRegistration(event) {
 
 // ==================== ADMIN FUNCTIONS ====================
 async function loadCompetitors() {
-    const { data, error } = await supabase
-        .from('competitors')
-        .select('*')
-        .order('created_at', { ascending: false });
-    
-    const tbody = document.getElementById('tableBody');
-    const totalSpan = document.getElementById('totalCount');
-    
-    if (error) {
-        tbody.innerHTML = '<tr><td colspan="8" class="loading-state">Error cargando datos</td></tr>';
-        return;
+    try {
+        const { data, error } = await supabaseClient
+            .from('competitors')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        const tbody = document.getElementById('tableBody');
+        const totalSpan = document.getElementById('totalCount');
+        
+        if (error) {
+            console.error('Error loading competitors:', error);
+            if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="loading-state">Error cargando datos</td></tr>';
+            return;
+        }
+        
+        if (totalSpan && data) totalSpan.textContent = data.length;
+        
+        if (!data || data.length === 0) {
+            if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="loading-state">No hay competidores registrados</td></tr>';
+            return;
+        }
+        
+        if (tbody) {
+            tbody.innerHTML = data.map(comp => `
+                <tr>
+                    <td>${comp.id}</td>
+                    <td>${escapeHtml(comp.nombre)}</td>
+                    <td>${escapeHtml(comp.apellido)}</td>
+                    <td>${comp.dni}</td>
+                    <td>${comp.peso} kg</td>
+                    <td>${comp.cinturon}</td>
+                    <td>${new Date(comp.created_at).toLocaleDateString()}</td>
+                    <td>
+                        <button class="edit-btn" data-id="${comp.id}">Editar</button>
+                        <button class="delete-btn" data-id="${comp.id}">Eliminar</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', () => openEditModal(btn.dataset.id));
+        });
+        
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', () => deleteCompetitor(btn.dataset.id));
+        });
+    } catch (error) {
+        console.error('Error in loadCompetitors:', error);
     }
-    
-    if (totalSpan) totalSpan.textContent = data.length;
-    
-    if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="loading-state">No hay competidores registrados</td></tr>';
-        return;
-    }
-    
-    tbody.innerHTML = data.map(comp => `
-        <tr>
-            <td>${comp.id}</td>
-            <td>${comp.nombre}</td>
-            <td>${comp.apellido}</td>
-            <td>${comp.dni}</td>
-            <td>${comp.peso} kg</td>
-            <td>${comp.cinturon}</td>
-            <td>${new Date(comp.created_at).toLocaleDateString()}</td>
-            <td>
-                <button class="edit-btn" data-id="${comp.id}">Editar</button>
-                <button class="delete-btn" data-id="${comp.id}">Eliminar</button>
-            </td>
-        </tr>
-    `).join('');
-    
-    document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', () => openEditModal(btn.dataset.id));
-    });
-    
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', () => deleteCompetitor(btn.dataset.id));
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
     });
 }
 
 async function deleteCompetitor(id) {
     if (confirm('¿Eliminar este competidor permanentemente?')) {
-        const { error } = await supabase.from('competitors').delete().eq('id', id);
+        const { error } = await supabaseClient.from('competitors').delete().eq('id', id);
         if (error) {
             alert('Error al eliminar');
         } else {
@@ -205,22 +260,26 @@ async function deleteCompetitor(id) {
 }
 
 async function openEditModal(id) {
-    const { data, error } = await supabase
-        .from('competitors')
-        .select('*')
-        .eq('id', id)
-        .single();
-    
-    if (error) return;
-    
-    document.getElementById('editId').value = data.id;
-    document.getElementById('editNombre').value = data.nombre;
-    document.getElementById('editApellido').value = data.apellido;
-    document.getElementById('editDni').value = data.dni;
-    document.getElementById('editPeso').value = data.peso;
-    document.getElementById('editCinturon').value = data.cinturon;
-    
-    document.getElementById('editModal').style.display = 'block';
+    try {
+        const { data, error } = await supabaseClient
+            .from('competitors')
+            .select('*')
+            .eq('id', id)
+            .single();
+        
+        if (error) return;
+        
+        document.getElementById('editId').value = data.id;
+        document.getElementById('editNombre').value = data.nombre;
+        document.getElementById('editApellido').value = data.apellido;
+        document.getElementById('editDni').value = data.dni;
+        document.getElementById('editPeso').value = data.peso;
+        document.getElementById('editCinturon').value = data.cinturon;
+        
+        document.getElementById('editModal').style.display = 'block';
+    } catch (error) {
+        console.error('Error opening edit modal:', error);
+    }
 }
 
 async function saveEdit(event) {
@@ -235,7 +294,7 @@ async function saveEdit(event) {
         cinturon: document.getElementById('editCinturon').value
     };
     
-    const { error } = await supabase
+    const { error } = await supabaseClient
         .from('competitors')
         .update(updatedData)
         .eq('id', id);
@@ -252,12 +311,16 @@ async function saveEdit(event) {
 async function toggleInscriptions(isChecked) {
     inscriptionsOpen = isChecked;
     
-    const { error } = await supabase
-        .from('settings')
-        .upsert({ key: 'inscriptions_open', value: String(inscriptionsOpen) }, { onConflict: 'key' });
-    
-    if (error) console.error('Error saving status:', error);
-    updateInscriptionUI();
+    try {
+        const { error } = await supabaseClient
+            .from('settings')
+            .upsert({ key: 'inscriptions_open', value: String(inscriptionsOpen) }, { onConflict: 'key' });
+        
+        if (error) console.error('Error saving status:', error);
+        updateInscriptionUI();
+    } catch (error) {
+        console.error('Error toggling inscriptions:', error);
+    }
 }
 
 // ==================== ADMIN INITIALIZATION ====================
@@ -330,8 +393,13 @@ function initAdmin() {
 
 // ==================== MAIN INITIALIZATION ====================
 document.addEventListener('DOMContentLoaded', async () => {
+    // Iniciar countdown
+    startCountdown();
+    
+    // Cargar estado de inscripciones
     await loadInscriptionStatus();
     
+    // Configurar modal de inscripción
     const modal = document.getElementById('registerModal');
     const openBtn = document.getElementById('openRegisterBtn');
     const closeBtn = document.querySelector('.modal-close');
@@ -348,13 +416,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
     }
     
+    // Cerrar modal al hacer clic fuera
     window.onclick = (event) => {
         if (event.target === modal) modal.style.display = 'none';
     };
     
+    // Configurar formulario de inscripción
     const form = document.getElementById('registerForm');
     if (form) form.addEventListener('submit', submitRegistration);
     
+    // Inicializar admin si estamos en admin.html
     if (window.location.pathname.includes('admin.html')) {
         initAdmin();
         const loginPanel = document.getElementById('loginPanel');
@@ -362,9 +433,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+// Eliminar splash screen después de cargar
 window.addEventListener('load', () => {
     setTimeout(() => {
         const splash = document.getElementById('splash');
         if (splash) splash.style.display = 'none';
-    }, 3000);
+    }, 2500);
 });
