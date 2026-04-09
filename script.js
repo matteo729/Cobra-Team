@@ -337,7 +337,7 @@ function initAdmin() {
     if (loginBtn) {
         loginBtn.addEventListener('click', async () => {
             const password = passwordInput.value;
-            if (password === 'Cobra2024') {
+            if (password === 'cobra2026') {
                 loginPanel.style.display = 'none';
                 adminPanel.style.display = 'flex';
                 await loadCompetitors();
