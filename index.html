@@ -127,34 +127,34 @@
     <div class="modal-container">
         <div class="modal-header">
             <h2>Formulario de Inscripción</h2>
-            <button class="modal-close">&times;</button>
+            <button class="modal-close" aria-label="Cerrar">&times;</button>
         </div>
         <div class="modal-body">
             <div id="inscriptionStatus" class="alert alert-info">Inscripciones abiertas</div>
             <form id="registerForm">
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Nombre</label>
-                        <input type="text" id="nombre" class="form-control" required>
+                        <label for="nombre">Nombre</label>
+                        <input type="text" id="nombre" name="nombre" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label>Apellido</label>
-                        <input type="text" id="apellido" class="form-control" required>
+                        <label for="apellido">Apellido</label>
+                        <input type="text" id="apellido" name="apellido" class="form-control" required>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>DNI</label>
-                        <input type="text" id="dni" class="form-control" pattern="[0-9]+" required>
+                        <label for="dni">DNI</label>
+                        <input type="text" id="dni" name="dni" class="form-control" pattern="[0-9]+" required>
                     </div>
                     <div class="form-group">
-                        <label>Peso (kg)</label>
-                        <input type="number" id="peso" class="form-control" step="0.1" required>
+                        <label for="peso">Peso (kg)</label>
+                        <input type="number" id="peso" name="peso" class="form-control" step="0.1" required>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Grado / Cinturón</label>
-                    <select id="cinturon" class="form-control" required>
+                    <label for="cinturon">Grado / Cinturón</label>
+                    <select id="cinturon" name="cinturon" class="form-control" required>
                         <option value="">Seleccione su grado</option>
                         <option value="Blanco">Blanco</option>
                         <option value="Azul">Azul</option>
